@@ -1,0 +1,1 @@
+web: env PYTHONPATH=pikaacademy_backend gunicorn pikaacademy_manager.app:app

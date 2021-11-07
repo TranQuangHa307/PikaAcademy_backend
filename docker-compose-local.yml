@@ -1,0 +1,51 @@
+version: '3'
+services:
+  backend:
+    build:
+      context: .
+    image: pikaacademy-crengine:latest
+    command: "sh run_service.sh"
+    env_file:
+      - ./.local_env
+    depends_on:
+      - database
+    links:
+      - database:database
+    networks:
+      my-network:
+        aliases:
+          - crengine-app
+    volumes:
+      - .:/home/app
+      - ./../storage:/backend_logs
+    ports:
+      - '5000:5000'
+    security_opt:
+      - seccomp:unconfined
+
+  database:
+    image: mysql:8.0.26
+    env_file:
+      - ./.local_env
+    ports:
+      - '3308:3306'
+    networks:
+      - my-network
+    volumes:
+      - ./pikaacademy-db:/var/lib/mysql
+    cap_add:
+      - SYS_NICE  # CAP_SYS_NICE
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    links:
+      - database:mysql
+    ports:
+      - 8181:80
+    networks:
+      - my-network
+    env_file:
+      - ./.local_env
+
+networks:
+  my-network:

@@ -1,0 +1,1 @@
+env PYTHONPATH=pikaacademy_manager gunicorn pikaacademy_manager.app:app -b 0.0.0.0:5000 --reload --log-level debug --timeout 12000

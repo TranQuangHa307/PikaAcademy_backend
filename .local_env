@@ -1,0 +1,9 @@
+SQLALCHEMY_DATABASE_URI=mysql+pymysql://pikaacademy:pika123@database:3306/pikaacademy?charset=utf8mb4
+ENVIRONMENT=LOCAL
+MYSQL_ROOT_PASSWORD=pika123
+MYSQL_DATABASE=pikaacademy
+MYSQL_USER=pikaacademy
+MYSQL_PASSWORD=pika123
+PMA_HOST=database
+PMA_USER=pikaacademy
+PMA_PASSWORD=pika123
