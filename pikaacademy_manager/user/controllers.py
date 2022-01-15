@@ -1,6 +1,7 @@
 from logging import getLogger
 
 from cart.dao import CartDAO
+from transaction.dao import TransactionDAO
 from common.parameters import pagination_parameter
 from common.res_base import parse, paginate_result
 from exceptions import UserNotFoundException, EmailExistxception
@@ -10,12 +11,15 @@ from flask_jwt_extended import get_jwt_identity
 from flask_restplus import Namespace, Resource
 from libs.auth import AuthenticatedResource
 from libs.constants import RoleTypeEnum
+from google.oauth2 import id_token
+from google.auth.transport import requests
 from werkzeug.security import check_password_hash
 
 from .dao import UserDAO, UserLikeCourseDAO, UserPurchaseCourseDAO
 from .models import user_fields, user_like_course_fields, user_purchase_course_fields
-from .parameters import login_parameters, sign_up_parameters
-from .service import (user_like_course, sign_up)
+from .parameters import login_parameters, sign_up_parameters, pagination_parameter_transactions_user, \
+  change_password_parameters, login_google_parameters
+from .service import (user_like_course, sign_up, change_password)
 
 logger = getLogger(__name__)
 api = Namespace("user", description="User related operations")
@@ -32,6 +36,29 @@ class Login(Resource):
     args = login_parameters.parse_args(request)
     user_info = UserDAO.get_by_email(args.email)
     if not user_info or (user_info and not check_password_hash(user_info.hash_pwd, args.password)):
+      raise UserNotFoundException()
+    access_token = create_access_token(
+      {"id": user_info.id, "role": 'user', "user_name": user_info.email}
+    )
+    login_response = {
+      "access_token": access_token,
+      "user_role": 'user'
+    }
+    return login_response
+
+@api.route('/google_auth')
+class LoginByGoogle(Resource):
+  @api.doc()
+  @api.expect(login_google_parameters, validate=True)
+  def post(self):
+    args = login_google_parameters.parse_args(request)
+    id_info = id_token.verify_oauth2_token(
+      args.googleToken.replace("Bearer ", ''),
+      requests.Request(),
+      "684358347602-9e5kiu1cg8ctram5jpbj620hlo40skfk.apps.googleusercontent.com"
+    )
+    user_info = UserDAO.get_by_email(id_info["email"])
+    if not user_info:
       raise UserNotFoundException()
     access_token = create_access_token(
       {"id": user_info.id, "role": 'user', "user_name": user_info.email}
@@ -62,6 +89,17 @@ class SignUp(Resource):
   def post(self):
     sign_up(api.payload)
     return None, 201
+
+
+@api.route('/change-password')
+class ChangePassword(AuthenticatedResource):
+  @api.doc()
+  @api.expect(change_password_parameters, validate=True)
+  @AuthenticatedResource.roles_required([RoleTypeEnum.User.value])
+  def post(self):
+    args = change_password_parameters.parse_args(request)
+    res = change_password(args)
+    return res, 201
 
 
 @api.route("/me")
@@ -130,7 +168,7 @@ class UserLikeCourseController(AuthenticatedResource):
 class ListFavoriteCourseController(AuthenticatedResource):
   @api.doc()
   @api.expect(pagination_parameter, validate=True)
-  @AuthenticatedResource.roles_required([RoleTypeEnum.User.value])
+  @AuthenticatedResource.roles_required([RoleTypeEnum.User.value, RoleTypeEnum.Admin.value])
   def get(self, user_id):
     args = pagination_parameter.parse_args(request)
     return paginate_result(UserLikeCourseDAO.get_list(args, user_id))
@@ -150,7 +188,7 @@ class UserPurchaseCourseController(AuthenticatedResource):
 class ListPurchasedCourseController(AuthenticatedResource):
   @api.doc()
   @api.expect(pagination_parameter, validate=True)
-  @AuthenticatedResource.roles_required([RoleTypeEnum.User.value])
+  @AuthenticatedResource.roles_required([RoleTypeEnum.User.value, RoleTypeEnum.Admin.value])
   def get(self, user_id):
     args = pagination_parameter.parse_args(request)
     return paginate_result(UserPurchaseCourseDAO.get_list(args, user_id))
@@ -162,3 +200,13 @@ class UserCartController(AuthenticatedResource):
   @AuthenticatedResource.roles_required([RoleTypeEnum.Admin.value, RoleTypeEnum.User.value])
   def get(self, user_id):
     return parse(CartDAO.get_by_user_id(user_id))
+
+
+@api.route('/<user_id>/transactions')
+class UserTransactionsController(AuthenticatedResource):
+  @api.doc()
+  @api.expect(pagination_parameter_transactions_user, validate=True)
+  @AuthenticatedResource.roles_required([RoleTypeEnum.Admin.value, RoleTypeEnum.User.value])
+  def get(self, user_id):
+    args = pagination_parameter_transactions_user.parse_args(request)
+    return paginate_result(TransactionDAO.get_list_by_user_id(args, user_id))

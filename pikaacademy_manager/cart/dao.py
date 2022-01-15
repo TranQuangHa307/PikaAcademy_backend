@@ -98,9 +98,11 @@ class CartCourseDAO(object):
       raise InternalServerError(str(e.__cause__))
 
   @staticmethod
-  def clear_by_cart(cart_id):
+  def clear_by_cart(cart_id, course_ids):
     try:
-      db.session.query(CartCourse).filter(CartCourse.cart_id == cart_id, CartCourse.deleted_flag.isnot(True)).update(
+      db.session.query(CartCourse).filter(CartCourse.cart_id == cart_id,
+                                          CartCourse.course_id.in_(course_ids),
+                                          CartCourse.deleted_flag.isnot(True)).update(
         dict(deleted_flag=1))
       safe_commit()
     except Exception as e:

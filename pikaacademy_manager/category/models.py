@@ -9,7 +9,7 @@ from sqlalchemy.dialects.mysql import BIT, INTEGER, VARCHAR
 category_fields = {
   "name": fields.String(required=True),
   "url_image": fields.String(),
-  # "interests_id": fields.List(fields.Integer),
+  "interests_id": fields.List(fields.Integer),
   "created_by": fields.String(required=True),
   "updated_by": fields.String(required=True)
 }
@@ -21,6 +21,7 @@ class Category(Base):
   id = Column(INTEGER, primary_key=True)
   name = Column(Text, nullable=False)
   url_image = Column(Text, nullable=False)
+  interests_id = Column(ForeignKey('interests.id'), nullable=False, index=True)
   created_at = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
   updated_at = Column(DateTime, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
   created_by = Column(VARCHAR(256), nullable=False)
@@ -30,23 +31,7 @@ class Category(Base):
   def __init__(self, params):
     self.name = params["name"]
     self.url_image = params["url_image"]
+    self.interests_id = params["interests_id"]
     self.created_by = params["created_by"]
     self.updated_by = params["updated_by"]
 
-
-class InterestsCategory(Base):
-  __tablename__ = 'interests_category'
-
-  id = Column(INTEGER, primary_key=True)
-  interests_id = Column(ForeignKey('interests.id'), nullable=False, index=True)
-  category_id = Column(ForeignKey('category.id'), nullable=False, index=True)
-  created_at = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
-  updated_at = Column(DateTime, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
-  deleted_flag = Column(BIT(1))
-
-  # category = relationship('Category')
-  # interests = relationship('Interest')
-
-  def __init__(self, params):
-    self.interests_id = params["interests_id"]
-    self.category_id = params["category_id"]

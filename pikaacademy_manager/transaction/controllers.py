@@ -6,9 +6,9 @@ from common.res_base import parse, result_all, paginate_result
 from flask import request
 from flask_restplus import Namespace
 from libs.auth import AuthenticatedResource
-from libs.constants import RoleTypeEnum
+from common.constants import RoleTypeEnum
 
-from .dao import TransactionDAO, TransactionCourseDAO
+from .dao import TransactionDAO, TransactionCourseDAO, TransactionTeacherDAO
 from .models import transaction_fields, transaction_change_fields
 from .service import (transaction, update_transaction_status)
 
@@ -36,6 +36,7 @@ class TransactionListController(AuthenticatedResource):
   def post(self):
     transaction_id = transaction(api.payload)
     return transaction_id, 201
+
 
 @api.route('/status/<status>')
 class TransactionListByStatusController(AuthenticatedResource):
@@ -69,3 +70,12 @@ class TransactionCourseListController(AuthenticatedResource):
   @AuthenticatedResource.roles_required([RoleTypeEnum.User.value, RoleTypeEnum.Admin.value])
   def get(self, transaction_id):
     return result_all(TransactionCourseDAO.get_list_by_transaction(transaction_id))
+
+
+@api.route('/teacher/<teacher_id>')
+@api.response(404, 'Transaction not found')
+class TransactionTeacherController(AuthenticatedResource):
+  @api.doc()
+  @AuthenticatedResource.roles_required([RoleTypeEnum.Admin.value, RoleTypeEnum.Teacher.value])
+  def get(self, teacher_id):
+    return result_all(TransactionTeacherDAO.get_list_by_teacher_id(teacher_id))

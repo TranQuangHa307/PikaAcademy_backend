@@ -68,8 +68,4 @@ class InterestsController(AuthenticatedResource):
         InterestsDAO.delete(interests_id)
         return None, 204
 
-@api.route('/<interest_id>/category')
-class CourseChapterController(Resource):
-    @api.doc()
-    def get(self, interest_id):
-        return result_all(CategoryDAO.get_category_by_interests_id(interest_id))
+

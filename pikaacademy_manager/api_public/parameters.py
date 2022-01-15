@@ -20,6 +20,7 @@ parameter_teacher_courses = reqparse.RequestParser()
 parameter_teacher_courses.add_argument("page", type=int, location="args")
 parameter_teacher_courses.add_argument("limit", type=int, location="args")
 parameter_teacher_courses.add_argument("teacher_id", type=int, location="args")
+parameter_teacher_courses.add_argument("user_id", type=int, location="args")
 
 user_parameter = reqparse.RequestParser()
 user_parameter.add_argument("user_id", type=int, location="args")

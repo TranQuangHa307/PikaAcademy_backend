@@ -20,6 +20,7 @@ class ChapterDAO(object):
         Chapter.course_id,
         Session.id.label("session_id"),
         Session.name.label("session_name"),
+        Session.about.label("session_about"),
         Session.url_video.label("session_url_video"),
         Session.time.label("session_time"),
         Session.created_at.label("session_created_at"),
@@ -32,11 +33,14 @@ class ChapterDAO(object):
         .order_by(asc(Chapter.created_at)).all()
       res = []
       for item in res_query:
+        logger.info(item.id)
         index = next((res.index(x) for x in res if x["id"] == item.id), None)
-        if index:
+        logger.info(index)
+        if index != None:
           res[index]["sessions"].append({
             "id": item.session_id,
             "name": item.session_name,
+            "about": item.session_about,
             "chapter_id": item.id,
             "url_video": item.session_url_video,
             "time": item.session_time,
@@ -52,6 +56,7 @@ class ChapterDAO(object):
               {
                 "id": item.session_id,
                 "name": item.session_name,
+                "about": item.session_about,
                 "chapter_id": item.id,
                 "url_video": item.session_url_video,
                 "time": item.session_time,

@@ -1,6 +1,12 @@
-from .dao import CourseDAO, PriceDAO, DiscountPromotionDAO
-from werkzeug.exceptions import InternalServerError
 from logging import getLogger
+
+from werkzeug.exceptions import InternalServerError
+
+from .dao import CourseDAO, PriceDAO, DiscountPromotionDAO, MaterialDAO
+from teacher.dao import TeacherDAO
+from followed.dao import FollowerDAO
+from user.dao import UserByCourse
+from common.mail.send_mail import (add_course, uninstall, release_email)
 
 logger = getLogger(__name__)
 
@@ -38,6 +44,16 @@ def add_courses(body):
           'is_active': True
         }
         DiscountPromotionDAO.add(discount_promotion_obj)
+    material_arr = []
+    for item in body["material"]:
+      material_obj = {
+        'name': item["name"],
+        'link': item["link"],
+        'course_id': course_id
+      }
+      material_arr.append(material_obj)
+    if material_arr:
+      MaterialDAO.bulk_add(material_arr)
   except Exception as e:
     raise InternalServerError(str(e.__cause__))
 
@@ -83,5 +99,55 @@ def update_course(course_id, body):
         'is_active': True
       }
       DiscountPromotionDAO.add(discount_promotion_obj)
+    MaterialDAO.clear_by_course_id(course_id)
+    material_arr = []
+    for item in body["material"]:
+      material_obj = {
+        'name': item["name"],
+        'link': item["link"],
+        'course_id': course_id
+      }
+      material_arr.append(material_obj)
+    if material_arr:
+      MaterialDAO.bulk_add(material_arr)
+  except Exception as e:
+    raise InternalServerError(str(e.__cause__))
+
+
+def release(course_id):
+  try:
+    course = CourseDAO.get_by_id(course_id)
+    release = course.release
+    if course and course.is_active:
+      if course.release:
+        CourseDAO.update(course_id, {'release': False})
+      else:
+        release = True
+        CourseDAO.update(course_id, {'release': True})
+    teacher = TeacherDAO.get_by_id(course.teacher_id)
+    if teacher:
+      if release and course.release is None:
+        followers = FollowerDAO.get_all_follower_by_teacher_id(teacher.id)
+        if followers:
+          for item in followers:
+            obj = {
+              "teacher_url_avatar": teacher.url_avatar,
+              "teacher_name": teacher.full_name,
+              "course_name": course.name,
+              "course_url_intro_video": course.url_image
+            }
+            add_course(item.email, obj)
+      if course.release is not None:
+        users = UserByCourse.get_all_by_course_id(course_id)
+        if users:
+          for item in users:
+            obj = {
+              "name": f'{item.first_name} {item.last_name}',
+              "course_name": course.name
+            }
+            if release:
+              release_email(item.email, obj)
+            else:
+              uninstall(item.email, obj)
   except Exception as e:
     raise InternalServerError(str(e.__cause__))

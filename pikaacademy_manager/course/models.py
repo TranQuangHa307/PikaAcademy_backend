@@ -1,9 +1,10 @@
 # coding: utf-8
+from common.models import NullableString, NullableInteger
 from flask_restx import fields
 from libs.sql_action import Base
 from sqlalchemy import Column, DECIMAL, DateTime, Enum, Integer, Text, text, ForeignKey
 from sqlalchemy.dialects.mysql import BIT, INTEGER, VARCHAR
-from common.models import NullableString, NullableInteger
+
 course_fields = {
   "name": fields.String(required=True),
   "description": fields.String(required=True),
@@ -23,6 +24,7 @@ course_fields = {
   "teacher_id": fields.Integer(required=True),
   "created_by": fields.String(required=True),
   "updated_by": fields.String(required=True),
+  "material": fields.List(fields.Raw())
 }
 
 
@@ -41,6 +43,8 @@ class Course(Base):
   likes = Column(Integer, nullable=False, server_default=text("'0'"))
   rating = Column(Integer, nullable=False, server_default=text("'0'"))
   purchases = Column(Integer, nullable=False, server_default=text("'0'"))
+  is_active = Column(BIT(1))
+  release = Column(BIT(1))
   interests_id = Column(ForeignKey('interests.id'), nullable=False, index=True)
   category_id = Column(ForeignKey('category.id'), nullable=False, index=True)
   teacher_id = Column(ForeignKey('teacher.id'), nullable=False, index=True)
@@ -64,6 +68,24 @@ class Course(Base):
     self.created_by = params["created_by"]
     self.updated_by = params["updated_by"]
 
+
+class Material(Base):
+  __tablename__ = 'material'
+
+  id = Column(INTEGER, primary_key=True)
+  name = Column(Text, nullable=False)
+  link = Column(Text, nullable=False)
+  course_id = Column(ForeignKey('course.id'), nullable=False, index=True)
+  created_at = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
+  updated_at = Column(DateTime, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+  deleted_flag = Column(BIT(1))
+
+  def __init__(self, params):
+    self.name = params["name"]
+    self.link = params["link"]
+    self.course_id = params["course_id"]
+
+
 class Price(Base):
   __tablename__ = 'price'
 
@@ -79,6 +101,7 @@ class Price(Base):
     self.course_id = params["course_id"]
     self.price = params["price"]
     self.is_active = params["is_active"]
+
 
 class DiscountPromotion(Base):
   __tablename__ = 'discount_promotion'

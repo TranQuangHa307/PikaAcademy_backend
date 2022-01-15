@@ -20,9 +20,3 @@ class InterestsController(Resource):
   def get(self, interests_id):
     return parse(InterestsDAO.get_by_id(interests_id))
 
-@api.route('/<interests_id>/categories')
-@api.response(404, 'Interests not found.')
-class InterestsCategoryController(Resource):
-  @api.doc()
-  def get(self, interests_id):
-    return result_all(CategoryDAO.get_list_by_interests(interests_id))

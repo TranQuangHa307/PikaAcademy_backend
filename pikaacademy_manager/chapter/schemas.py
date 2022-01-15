@@ -12,6 +12,7 @@ class SessionSchema(ma.SQLAlchemySchema):
 
   id = ma.auto_field()
   name = ma.auto_field()
+  about = ma.auto_field()
   url_video = ma.auto_field()
   time = ma.auto_field()
   created_at = ma.Function(lambda obj: obj["created_at"].timestamp() if obj["created_at"] else None)

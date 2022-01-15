@@ -4,7 +4,7 @@ from libs.sql_action import db, safe_commit
 from course.models import Course
 from sqlalchemy import desc, and_, func
 from werkzeug.exceptions import InternalServerError
-from category.models import Category, InterestsCategory
+from category.models import Category
 from .models import Interests
 from logging import getLogger
 

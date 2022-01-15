@@ -1,5 +1,6 @@
 import os
 from datetime import timedelta
+
 CURRENT_ENV = os.environ.get('ENVIRONMENT')
 SENTRY_DNS = os.environ.get('SENTRY_DNS', 'https://b3cafe9cdfed4d078b282149eedf07be@o961745.ingest.sentry.io/5910130')
 RELEASE_VERSION = os.environ.get('RELEASE_VERSION', '0.0.1')
@@ -16,3 +17,9 @@ if "" in CORS_ORIGINS:
 ACCESS_TOKEN_DROPBOX = 'XexPqeot4JQAAAAAAAAAAZcEKNZe3oeS-7RPqadNAwu65KjOQZQnSlhV_AwE9kJg'
 JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=30)
 SENDGRID_API_KEY = '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'
+
+# smtp
+port = 465
+smtp_server = "smtp.gmail.com"
+sender_email = "pikaacademy.edu@gmail.com"
+password = 'Anhhoang@123'

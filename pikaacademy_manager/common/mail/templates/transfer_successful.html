@@ -1,0 +1,71 @@
+<div style="font-family: inherit; text-align: inherit"></div>
+<div style="background-color: #242529; width: 100%; text-align: center;">
+  <p style="font-style: italic; font-weight: bolder; color: #bae910; text-shadow: 5px 2px 4px grey; font-size: 25px;">PIKAACADEMY</p>
+</div>
+<div>
+  <h1>Hi {{ full_name }}</h1>
+</div>
+<div>
+  <i>PikaAcademy is pleased to inform that your transaction has been successfully with details as below:</i>
+</div>
+<table style="width: 100%;">
+  <colgroup>
+    <col width="65%">
+    <col width="15%">
+    <col width="15%">
+    <col width="15%">
+  </colgroup>
+  <thead>
+    <tr style="background-color: #0DACEA; color: white; font-weight: bold;">
+      <th>Course</th>
+      <th>Price</th>
+      <th>Discount</th>
+      <th>Total</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in transaction_courses %}
+      <tr>
+        <td>{{ item.course_name }}</td>
+        <td style="text-align: right;">{{ "{:,}".format(item.original_price) }}đ</td>
+        <td style="text-align: right;">{{ "{:,}".format(item.discount) }}%</td>
+        <td style="text-align: right;">{{ "{:,}".format(item.original_price - ((item.original_price/100)*item.discount)) }}đ</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<table style="width: 100%;">
+  <colgroup>
+    <col width="95%">
+    <col width="15%">
+  </colgroup>
+  <tbody>
+    <tr>
+      <td style="text-align: right; font-weight: bold;">Total</td>
+      <td style="text-align: right;">{{ "{:,}".format(transaction.total) }}đ</td>
+    </tr>
+    <tr>
+      <td style="text-align: right; font-weight: bold;">Discount</td>
+      <td style="text-align: right;">{{ "{:,}".format(transaction.discount) }}đ</td>
+    </tr>
+    <tr>
+      <td style="text-align: right; font-weight: bold;">Total Amount</td>
+      <td style="text-align: right;">{{ "{:,}".format(transaction.total - (transaction.total/100)*transaction.discount) }}đ</td>
+    </tr>
+  </tbody>
+</table>
+
+<style>
+ tr {
+  background-color: #EEEEEE;
+  height: 30px;
+  text-align: left;
+  line-height: 30px;
+ }
+ p {
+  line-height: 30px !important;
+ }
+ .txt_right {
+  text-align: right;
+ }
+</style>

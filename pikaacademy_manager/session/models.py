@@ -20,6 +20,7 @@ class Session(Base):
 
   id = Column(INTEGER, primary_key=True)
   name = Column(Text, nullable=False)
+  about = Column(Text, nullable=False)
   url_video = Column(Text, nullable=False)
   time = Column(INTEGER, nullable=False)
   chapter_id = Column(ForeignKey('chapter.id'), nullable=False, index=True)
@@ -33,6 +34,7 @@ class Session(Base):
 
   def __init__(self, params):
     self.name = params["name"]
+    self.about = params["about"]
     self.url_video = params["url_video"]
     self.chapter_id = params["chapter_id"]
     self.time = params["time"]

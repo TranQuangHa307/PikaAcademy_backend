@@ -12,6 +12,7 @@ class SessionDAO(object):
         Session.id,
         Session.name,
         Session.url_video,
+        Session.description,
         Session.chapter_id
       ).filter(Session.chapter_id == chapter_id, Session.deleted_flag.isnot(True)) \
         .order_by(asc(Session.created_at)).all()

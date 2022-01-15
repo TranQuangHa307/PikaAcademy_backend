@@ -4,9 +4,8 @@ from flask_restplus import Namespace, reqparse
 from libs.auth import AuthenticatedResource
 from common.res_base import parse
 from .models import category_fields
-from .service import *
-
-logger = getLogger(__name__)
+from .dao import CategoryDAO
+from common.constants import RoleTypeEnum
 api = Namespace("category", description="Category related operations")
 
 category_model = api.model("Category", category_fields)
@@ -37,7 +36,7 @@ class CategoryListController(AuthenticatedResource):
 @api.route('/all')
 class CategoryAllController(AuthenticatedResource):
   @api.doc()
-  @AuthenticatedResource.roles_required(['admin'])
+  @AuthenticatedResource.roles_required([RoleTypeEnum.Admin.value, RoleTypeEnum.Teacher.value])
   def get(self):
     return CategoryDAO.get_all()
 
@@ -46,7 +45,7 @@ class CategoryAllController(AuthenticatedResource):
 class CategoryController(AuthenticatedResource):
   @api.doc()
   def get(self, category_id):
-    return parse(CategoryDAO.get_category_by_id(category_id))
+    return parse(CategoryDAO.get_by_id(category_id))
 
 
   @api.doc()
@@ -54,7 +53,6 @@ class CategoryController(AuthenticatedResource):
   @api.response(204, 'Category successfully updated.')
   @AuthenticatedResource.roles_required(['admin'])
   def put(self, category_id):
-    # update_category(category_id, api.payload)
     CategoryDAO.update(category_id, api.payload)
     return None, 204
 
@@ -62,5 +60,5 @@ class CategoryController(AuthenticatedResource):
   @api.response(204, 'Category successfully deleted.')
   @AuthenticatedResource.roles_required(['admin'])
   def delete(self, category_id):
-    delete_category(category_id)
+    CategoryDAO.delete(category_id)
     return None, 204

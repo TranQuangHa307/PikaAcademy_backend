@@ -12,7 +12,7 @@ miggen: pyclean
 	env FLASK_APP=cli.py LOG_LEVEL=ERROR flask migrate-new $(name)
 
 local:
-    docker-compose -f docker-compose-local.yml up --build
+
 
 run:
 	docker-compose -f docker-compose-prod.yml up --build

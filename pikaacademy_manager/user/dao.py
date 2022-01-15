@@ -1,13 +1,16 @@
-from libs.sql_action import db, safe_commit
-from .models import User, UserLikeCourse, UserPurchaseCourse
+import datetime
+
+from common.models import Pagination
 from course.models import Course, Price, DiscountPromotion
+from libs.sql_action import db, safe_commit
+from sqlalchemy import desc, or_, and_, func
 from teacher.models import Teacher
 from transaction.models import Transaction, TransactionCourse
 from werkzeug.exceptions import InternalServerError
-from sqlalchemy import desc, or_, and_
-from common.models import Pagination
 from werkzeug.security import generate_password_hash
-import datetime
+
+from .models import User, UserLikeCourse, UserPurchaseCourse
+
 
 class UserDAO(object):
   @staticmethod
@@ -96,6 +99,26 @@ class UserDAO(object):
 
 
 class UserLikeCourseDAO(object):
+
+  @staticmethod
+  def get_list_by_course_id(args: Pagination, course_id):
+    try:
+      res_query = db.session.query(
+        UserLikeCourse.id,
+        UserLikeCourse.course_id,
+        UserLikeCourse.user_id,
+        UserLikeCourse.time,
+        User.first_name.label('user_first_name'),
+        User.last_name.label('user_last_name'),
+        User.url_avatar.label('user_url_avatar')
+      ).join(User, User.id == UserLikeCourse.user_id) \
+        .filter(UserLikeCourse.course_id == course_id,
+                UserLikeCourse.deleted_flag.isnot(True))
+      res_query = res_query.order_by(desc(UserLikeCourse.time)).paginate(args.page, args.limit)
+      return res_query
+    except Exception as e:
+      raise InternalServerError(str(e.__cause__))
+
   @staticmethod
   def get_by_id(course_id, user_id):
     try:
@@ -126,9 +149,12 @@ class UserLikeCourseDAO(object):
         Course.views,
         Course.likes,
         Course.purchases,
+        Course.created_at,
+        Course.updated_at,
         Price.price.label('price'),
         DiscountPromotion.discount.label('discount'),
         UserLikeCourse.id.label('user_like_course_id'),
+        UserLikeCourse.time.label('liked_at'),
         UserPurchaseCourse.id.label('user_purchase_course_id')
       ).outerjoin(Price,
                   and_(Price.course_id == Course.id,
@@ -186,6 +212,8 @@ class UserPurchaseCourseDAO(object):
         Course.views,
         Course.likes,
         Course.purchases,
+        Course.created_at,
+        Course.updated_at,
         Price.price.label('price'),
         DiscountPromotion.discount.label('discount'),
         UserLikeCourse.id.label('user_like_course_id'),
@@ -229,6 +257,13 @@ class UserPurchaseCourseDAO(object):
       raise InternalServerError(str(e.__cause__))
 
   @staticmethod
+  def update_is_rating(_id):
+    try:
+      UserPurchaseCourse.update(_id, {"is_rating": True})
+    except Exception as e:
+      raise InternalServerError(str(e.__cause__))
+
+  @staticmethod
   def bulk_add(user_purchase_courses):
     try:
       user_purchase_courses_sql = []
@@ -239,3 +274,79 @@ class UserPurchaseCourseDAO(object):
       safe_commit()
     except Exception as e:
       raise InternalServerError(e.__cause__)
+
+  @staticmethod
+  def get_user_total_by_teacher_id(teacher_id):
+    try:
+      res_query = db.session.query(Course.teacher_id, func.count(UserPurchaseCourse.user_id).label('total')) \
+        .join(UserPurchaseCourse, UserPurchaseCourse.course_id == Course.id) \
+        .filter(Course.teacher_id == teacher_id,
+                Course.deleted_flag.isnot(True),
+                UserPurchaseCourse.deleted_flag.isnot(True)).group_by(UserPurchaseCourse.user_id).first()
+      return res_query
+    except Exception as e:
+      raise InternalServerError(e.__cause__)
+
+
+class UserByCourse(object):
+  @staticmethod
+  def get_list_by_course_id(args: Pagination, course_id):
+    try:
+      res_query = db.session.query(
+        User.id,
+        User.first_name,
+        User.last_name,
+        User.email,
+        User.date_of_birth,
+        User.url_avatar,
+        Transaction.time.label('buyed_at')
+      ).join(Transaction, Transaction.user_id == User.id) \
+        .join(TransactionCourse, TransactionCourse.transaction_id == Transaction.id) \
+        .filter(TransactionCourse.course_id == course_id,
+                Transaction.status == 'success',
+                TransactionCourse.deleted_flag.isnot(True),
+                Transaction.deleted_flag.isnot(True),
+                User.deleted_flag.isnot(True))
+      res_query = res_query.order_by(desc(Transaction.created_at)).paginate(args.page, args.limit)
+      return res_query
+    except Exception as e:
+      raise InternalServerError(str(e.__cause__))
+
+  @staticmethod
+  def get_all_by_course_id(course_id):
+    try:
+      res_query = db.session.query(
+        User.id,
+        User.first_name,
+        User.last_name,
+        User.email,
+        User.date_of_birth,
+        User.url_avatar,
+        Transaction.time.label('buyed_at')
+      ).join(Transaction, Transaction.user_id == User.id) \
+        .join(TransactionCourse, TransactionCourse.transaction_id == Transaction.id) \
+        .filter(TransactionCourse.course_id == course_id,
+                Transaction.status == 'success',
+                TransactionCourse.deleted_flag.isnot(True),
+                Transaction.deleted_flag.isnot(True),
+                User.deleted_flag.isnot(True))
+      res_query = res_query.order_by(desc(Transaction.created_at)).all()
+      return res_query
+    except Exception as e:
+      raise InternalServerError(str(e.__cause__))
+
+
+class CourseTeacherDAO(object):
+  @staticmethod
+  def get_top_course_by_teacher_id(teacher_id, keyword):
+    try:
+      res_query = db.session.query(
+        Course.id,
+        Course.name,
+        Course.url_image,
+        Course.likes,
+        Course.purchases
+      ).filter(Course.teacher_id == teacher_id,
+               Course.deleted_flag.isnot(True))
+    except Exception as e:
+      raise InternalServerError(str(e.__cause__))

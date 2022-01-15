@@ -79,6 +79,7 @@ class UserPurchaseCourse(Base):
   course_id = Column(ForeignKey('course.id'), nullable=False, index=True)
   transaction_id = Column(ForeignKey('transaction.id'), nullable=False, index=True)
   time = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
+  is_rating = Column(BIT(1))
   created_at = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
   updated_at = Column(DateTime, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
   deleted_flag = Column(BIT(1))

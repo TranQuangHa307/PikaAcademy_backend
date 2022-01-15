@@ -2,9 +2,12 @@ from libs.sql_action import db, safe_commit
 from .models import Transaction, TransactionCourse
 from werkzeug.exceptions import InternalServerError
 from logging import getLogger
-from sqlalchemy import desc
+from sqlalchemy import desc, asc, func
 from common.models import Pagination
+from course.models import Course
+from teacher.models import Teacher
 from common.constants import TransactionStatusEnum
+
 logger = getLogger(__name__)
 
 
@@ -29,8 +32,38 @@ class TransactionDAO(object):
       )
       if args.status:
         res_query = res_query.filter(Transaction.status == args.status)
-      res_query = res_query.filter(Transaction.deleted_flag.isnot(True))\
+      res_query = res_query.filter(Transaction.deleted_flag.isnot(True)) \
         .group_by(Transaction.id).order_by(desc(Transaction.created_at)) \
+        .paginate(args.page, args.limit)
+      return res_query
+    except Exception as e:
+      raise InternalServerError(e.__cause__)
+
+  @staticmethod
+  def get_list_by_user_id(args: Pagination, user_id):
+    try:
+      res_query = db.session.query(
+        Transaction.id,
+        Transaction.code,
+        Transaction.user_id,
+        Transaction.first_name,
+        Transaction.last_name,
+        Transaction.email,
+        Transaction.phone_number,
+        Transaction.voucher_id,
+        Transaction.discount,
+        Transaction.total,
+        Transaction.payment_mode,
+        Transaction.status,
+        Transaction.time
+      )
+      logger.info(f'{args.status}')
+      if args.status:
+        logger.info(f'args.status')
+        res_query = res_query.filter(Transaction.status.in_(args.status))
+      res_query = res_query.filter(Transaction.user_id == user_id,
+                                   Transaction.deleted_flag.isnot(True)) \
+        .group_by(Transaction.id).order_by(asc(Transaction.status), desc(Transaction.created_at)) \
         .paginate(args.page, args.limit)
       return res_query
     except Exception as e:
@@ -75,7 +108,7 @@ class TransactionDAO(object):
         Transaction.payment_mode,
         Transaction.status,
         Transaction.time
-      ).filter(Transaction.deleted_flag.isnot(True), Transaction.status==status).all()
+      ).filter(Transaction.deleted_flag.isnot(True), Transaction.status == status).all()
       return res_query
     except Exception as e:
       raise InternalServerError(e.__cause__)
@@ -127,3 +160,28 @@ class TransactionCourseDAO(object):
       return res_query
     except Exception as e:
       raise InternalServerError(str(e.__cause__))
+
+
+class TransactionTeacherDAO(object):
+  @staticmethod
+  def get_list_by_teacher_id(teacher_id):
+    try:
+      res_query = db.session.query(
+        Transaction.id,
+        Transaction.time,
+        func.sum(
+          TransactionCourse.original_price - (
+              (TransactionCourse.original_price / 100) * TransactionCourse.discount) - (
+              (TransactionCourse.original_price / 100) * 30)).label('total')
+      ).join(TransactionCourse, Transaction.id == TransactionCourse.transaction_id) \
+        .join(Course, TransactionCourse.course_id == Course.id) \
+        .join(Teacher, Course.teacher_id == Teacher.id) \
+        .filter(Teacher.id == teacher_id,
+                Teacher.deleted_flag.isnot(True),
+                TransactionCourse.deleted_flag.isnot(True),
+                Transaction.status == TransactionStatusEnum.Success.value,
+                Transaction.deleted_flag.isnot(True))
+      res_query = res_query.group_by(Transaction.id).order_by(Transaction.time).all()
+      return res_query
+    except Exception as e:
+      raise InternalServerError(e.__cause__)
