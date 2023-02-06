@@ -4,8 +4,8 @@ from datetime import timedelta
 CURRENT_ENV = os.environ.get('ENVIRONMENT')
 SENTRY_DNS = os.environ.get('SENTRY_DNS', 'https://b3cafe9cdfed4d078b282149eedf07be@o961745.ingest.sentry.io/5910130')
 RELEASE_VERSION = os.environ.get('RELEASE_VERSION', '0.0.1')
-SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI',
-                                         'mysql+pymysql://root:Anhhoang@123@localhost:3306/pikaacademy?charset=utf8mb4')
+SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI', 'mysql+pymysql://root:Tranquangha123@localhost:3306/pikaacademy?charset=utf8mb4')
+SQLALCHEMY_POOL_SIZE=50
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SECRET_KEY = "\xf9'\xe4p(\xa9\x12\x1a!\x94\x8d\x1c\x99l\xc7\xb7e\xc7c\x86\x02MJ\xa0"
 
@@ -22,4 +22,4 @@ SENDGRID_API_KEY = 'SG.bEAxSPrSQnifRtQBXRvsdQ.KAyCCTFBY0b_4gU2dk2_TYGdwfkRCej2Zo
 port = 465
 smtp_server = "smtp.gmail.com"
 sender_email = "pikaacademy.edu@gmail.com"
-password = 'Anhhoang@123'
+password = 'xbhvtygvubuksesn'

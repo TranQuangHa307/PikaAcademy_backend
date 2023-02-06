@@ -5,12 +5,13 @@ import tempfile
 from datetime import datetime
 from config import ACCESS_TOKEN_DROPBOX
 from flask_restplus import Namespace, Resource, reqparse
+from flask_restplus.reqparse import RequestParser
 from werkzeug.utils import secure_filename
 logger = getLogger(__name__)
 
 api = Namespace("common")
 
-file_upload_parameter = reqparse.RequestParser()
+file_upload_parameter: RequestParser = reqparse.RequestParser()
 file_upload_parameter.add_argument('folder', type=str, location='args')
 file_upload_parameter.add_argument(
   'file', type=werkzeug.datastructures.FileStorage, location='files', required=True

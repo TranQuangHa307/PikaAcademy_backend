@@ -12,6 +12,7 @@ session_fields = {
   "time": fields.Integer(required=True),
   "created_by": fields.String(required=True),
   "updated_by": fields.String(required=True),
+  "exercise": fields.List(fields.Raw())
 }
 
 
@@ -40,3 +41,19 @@ class Session(Base):
     self.time = params["time"]
     self.created_by = params["created_by"]
     self.updated_by = params["updated_by"]
+
+class Exercise(Base):
+  __tablename__ = 'exercise'
+
+  id = Column(INTEGER, primary_key=True)
+  name = Column(Text, nullable=False)
+  link = Column(Text, nullable=False)
+  session_id = Column(ForeignKey('session.id'), nullable=False, index=True)
+  created_at = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
+  updated_at = Column(DateTime, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+  deleted_flag = Column(BIT(1))
+
+  def __init__(self, params):
+    self.name = params["name"]
+    self.link = params["link"]
+    self.session_id = params["session_id"]

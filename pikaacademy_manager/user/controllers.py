@@ -1,7 +1,5 @@
 from logging import getLogger
 
-from cart.dao import CartDAO
-from transaction.dao import TransactionDAO
 from common.parameters import pagination_parameter
 from common.res_base import parse, paginate_result
 from exceptions import UserNotFoundException, EmailExistxception
@@ -19,7 +17,7 @@ from .dao import UserDAO, UserLikeCourseDAO, UserPurchaseCourseDAO
 from .models import user_fields, user_like_course_fields, user_purchase_course_fields
 from .parameters import login_parameters, sign_up_parameters, pagination_parameter_transactions_user, \
   change_password_parameters, login_google_parameters
-from .service import (user_like_course, sign_up, change_password)
+from .service import (user_like_course, sign_up, change_password, user_purchase_course)
 
 logger = getLogger(__name__)
 api = Namespace("user", description="User related operations")
@@ -180,7 +178,7 @@ class UserPurchaseCourseController(AuthenticatedResource):
   @api.expect(user_purchase_course_model, validate=True)
   @AuthenticatedResource.roles_required([RoleTypeEnum.User.value])
   def post(self):
-    UserPurchaseCourseDAO.add(api.payload)
+    user_purchase_course(api.payload)
     return None, 201
 
 
@@ -194,19 +192,6 @@ class ListPurchasedCourseController(AuthenticatedResource):
     return paginate_result(UserPurchaseCourseDAO.get_list(args, user_id))
 
 
-@api.route('/<user_id>/user-cart')
-class UserCartController(AuthenticatedResource):
-  @api.doc()
-  @AuthenticatedResource.roles_required([RoleTypeEnum.Admin.value, RoleTypeEnum.User.value])
-  def get(self, user_id):
-    return parse(CartDAO.get_by_user_id(user_id))
 
 
-@api.route('/<user_id>/transactions')
-class UserTransactionsController(AuthenticatedResource):
-  @api.doc()
-  @api.expect(pagination_parameter_transactions_user, validate=True)
-  @AuthenticatedResource.roles_required([RoleTypeEnum.Admin.value, RoleTypeEnum.User.value])
-  def get(self, user_id):
-    args = pagination_parameter_transactions_user.parse_args(request)
-    return paginate_result(TransactionDAO.get_list_by_user_id(args, user_id))
+

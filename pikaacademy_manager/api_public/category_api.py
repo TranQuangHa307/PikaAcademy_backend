@@ -15,3 +15,5 @@ class CategoryController(Resource):
   @api.doc()
   def get(self, category_id):
     return parse(CategoryDAO.get_by_id(category_id))
+
+

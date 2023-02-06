@@ -11,9 +11,9 @@ from flask_restplus import Namespace, reqparse, Resource
 from libs.auth import AuthenticatedResource
 from user.dao import UserByCourse, UserLikeCourseDAO
 
-from .dao import CourseDAO, CourseTeacherDAO, MaterialDAO, PriceDAO, DiscountPromotionDAO
+from .dao import CourseDAO, CourseTeacherDAO, MaterialDAO
 from .models import course_fields
-from .service import (add_courses, update_course, release)
+from .service import (add_courses, update_course, release, active)
 
 logger = getLogger(__name__)
 api = Namespace("course", description='Courses related operations')
@@ -110,23 +110,6 @@ class CourseMaterialController(AuthenticatedResource):
   def get(self, course_id):
     return result_all(MaterialDAO.get_list_by_course_id(course_id))
 
-
-@api.route('/<course_id>/price')
-class CoursePriceController(AuthenticatedResource):
-  @api.doc()
-  @AuthenticatedResource.roles_required([RoleTypeEnum.Admin.value, RoleTypeEnum.Teacher.value])
-  def get(self, course_id):
-    return result_all(PriceDAO.get_list_by_course_id(course_id))
-
-
-@api.route('/<course_id>/discount-promotion')
-class CoursePriceController(AuthenticatedResource):
-  @api.doc()
-  @AuthenticatedResource.roles_required([RoleTypeEnum.Admin.value, RoleTypeEnum.Teacher.value])
-  def get(self, course_id):
-    return result_all(DiscountPromotionDAO.get_list_by_course_id(course_id))
-
-
 @api.route('/inactive')
 class CourseInactive(AuthenticatedResource):
   @api.doc()
@@ -140,7 +123,7 @@ class CourseActive(AuthenticatedResource):
   @api.doc()
   @AuthenticatedResource.roles_required([RoleTypeEnum.Admin.value, RoleTypeEnum.Teacher.value])
   def put(self, course_id):
-    CourseDAO.update(course_id, {'is_active': True})
+    active(course_id)
     return None, 204
 
 

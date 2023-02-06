@@ -11,11 +11,12 @@ from libs.auth import AuthenticatedResource
 from werkzeug.security import check_password_hash
 from .dao import TeacherDAO, TeacherUserDAO, TeacherUserCourseDAO
 from .models import teacher_fields, Teacher
-from .parameters import login_parameters, sign_up_parameters
+from .parameters import login_parameters, sign_up_parameters, parameter_teacher_courses
 from exceptions import UserNotFoundException, EmailExistxception
 from flask_jwt_extended import get_jwt_identity, get_jwt_claims
 from flask_jwt_extended import create_access_token
 from .service import (change_password, sign_up, active_teacher)
+from course.dao import CourseDAO
 
 logger = getLogger(__name__)
 api = Namespace("teacher", description='Teachers related operations')
@@ -185,3 +186,13 @@ class TeacherActiveController(AuthenticatedResource):
   def put(self, teacher_id):
     active_teacher(teacher_id)
     return None, 204
+
+@api.route('/<teacher_id>/courses')
+class TeacherCoursesController(Resource):
+  @api.doc()
+  @api.expect(parameter_teacher_courses, validate=True)
+  @AuthenticatedResource.roles_required([RoleTypeEnum.Teacher.value])
+  def get(self, teacher_id):
+    args = parameter_teacher_courses.parse_args(request)
+    paging = Pagination.from_arguments(args)
+    return paginate_result(CourseDAO.get_list(paging))

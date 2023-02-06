@@ -13,12 +13,6 @@ course_fields = {
   "url_intro_video": fields.String(required=True),
   "result": fields.String(required=True),
   "level": fields.String(required=True),
-  "price_id": NullableInteger,
-  "price": fields.Arbitrary(min=0, required=True),
-  "discount_promotion_id": NullableInteger,
-  "discount": NullableInteger,
-  "begin_date": NullableString,
-  "end_date": NullableString,
   "interests_id": fields.Integer(required=True),
   "category_id": fields.Integer(required=True),
   "teacher_id": fields.Integer(required=True),
@@ -53,7 +47,7 @@ class Course(Base):
   created_by = Column(VARCHAR(256), nullable=False)
   updated_by = Column(VARCHAR(256), nullable=False)
   deleted_flag = Column(BIT(1))
-
+  DEMO = Column(Text, nullable=True)
   def __init__(self, params):
     self.name = params["name"]
     self.description = params["description"]
@@ -62,13 +56,14 @@ class Course(Base):
     self.url_intro_video = params["url_intro_video"]
     self.result = params["result"]
     self.level = params["level"]
+    self.is_active = params["is_active"]
+    self.release = params["release"]
     self.interests_id = params["interests_id"]
     self.category_id = params["category_id"]
     self.teacher_id = params["teacher_id"]
     self.created_by = params["created_by"]
     self.updated_by = params["updated_by"]
-
-
+    self.DEMO = params["DEMO"]
 class Material(Base):
   __tablename__ = 'material'
 
@@ -86,39 +81,5 @@ class Material(Base):
     self.course_id = params["course_id"]
 
 
-class Price(Base):
-  __tablename__ = 'price'
-
-  id = Column(INTEGER, primary_key=True)
-  course_id = Column(ForeignKey('course.id'), nullable=False, index=True)
-  price = Column(DECIMAL(10, 0), nullable=False)
-  is_active = Column(BIT(1))
-  created_at = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
-  updated_at = Column(DateTime, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
-  deleted_flag = Column(BIT(1))
-
-  def __init__(self, params):
-    self.course_id = params["course_id"]
-    self.price = params["price"]
-    self.is_active = params["is_active"]
 
 
-class DiscountPromotion(Base):
-  __tablename__ = 'discount_promotion'
-
-  id = Column(INTEGER, primary_key=True)
-  course_id = Column(ForeignKey('course.id'), nullable=False, index=True)
-  discount = Column(Integer)
-  begin_date = Column(DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
-  end_date = Column(DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
-  is_active = Column(BIT(1))
-  created_at = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
-  updated_at = Column(DateTime, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
-  deleted_flag = Column(BIT(1))
-
-  def __init__(self, params):
-    self.course_id = params["course_id"]
-    self.discount = params["discount"]
-    self.begin_date = params["begin_date"]
-    self.end_date = params["end_date"]
-    self.is_active = params["is_active"]

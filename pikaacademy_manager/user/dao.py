@@ -1,11 +1,10 @@
 import datetime
 
 from common.models import Pagination
-from course.models import Course, Price, DiscountPromotion
+from course.models import Course
 from libs.sql_action import db, safe_commit
 from sqlalchemy import desc, or_, and_, func
 from teacher.models import Teacher
-from transaction.models import Transaction, TransactionCourse
 from werkzeug.exceptions import InternalServerError
 from werkzeug.security import generate_password_hash
 
@@ -93,7 +92,7 @@ class UserDAO(object):
   @staticmethod
   def delete(_id):
     try:
-      User.update(_id, {"delete_flag": True})
+      User.update(_id, {"deleted_flag": True})
     except Exception as e:
       raise InternalServerError(str(e.__cause__))
 
@@ -151,22 +150,10 @@ class UserLikeCourseDAO(object):
         Course.purchases,
         Course.created_at,
         Course.updated_at,
-        Price.price.label('price'),
-        DiscountPromotion.discount.label('discount'),
         UserLikeCourse.id.label('user_like_course_id'),
         UserLikeCourse.time.label('liked_at'),
         UserPurchaseCourse.id.label('user_purchase_course_id')
-      ).outerjoin(Price,
-                  and_(Price.course_id == Course.id,
-                       Price.is_active == 1,
-                       Price.deleted_flag.isnot(True))) \
-        .outerjoin(DiscountPromotion,
-                   and_(DiscountPromotion.course_id == Course.id,
-                        DiscountPromotion.is_active == 1,
-                        DiscountPromotion.begin_date <= current_date,
-                        DiscountPromotion.end_date >= current_date,
-                        DiscountPromotion.deleted_flag.isnot(True))) \
-        .join(UserLikeCourse, UserLikeCourse.course_id == Course.id) \
+      ).join(UserLikeCourse, UserLikeCourse.course_id == Course.id) \
         .outerjoin(UserPurchaseCourse,
                    and_(UserPurchaseCourse.course_id == Course.id,
                         UserPurchaseCourse.user_id == _id,
@@ -214,36 +201,18 @@ class UserPurchaseCourseDAO(object):
         Course.purchases,
         Course.created_at,
         Course.updated_at,
-        Price.price.label('price'),
-        DiscountPromotion.discount.label('discount'),
         UserLikeCourse.id.label('user_like_course_id'),
         UserPurchaseCourse.id.label('user_purchase_course_id'),
-        TransactionCourse.original_price.label('transaction_original_price'),
-        TransactionCourse.discount.label('transaction_discount'),
-        Transaction.time.label('transaction_time'),
         Teacher.full_name.label('teacher')
-      ).outerjoin(Price,
-                  and_(Price.course_id == Course.id,
-                       Price.is_active == 1,
-                       Price.deleted_flag.isnot(True))) \
-        .outerjoin(DiscountPromotion,
-                   and_(DiscountPromotion.course_id == Course.id,
-                        DiscountPromotion.is_active == 1,
-                        DiscountPromotion.begin_date <= current_date,
-                        DiscountPromotion.end_date >= current_date,
-                        DiscountPromotion.deleted_flag.isnot(True))) \
-        .join(Teacher, Teacher.id == Course.teacher_id) \
+      ).join(Teacher, Teacher.id == Course.teacher_id) \
         .join(UserPurchaseCourse, UserPurchaseCourse.course_id == Course.id) \
-        .join(Transaction, Transaction.id == UserPurchaseCourse.transaction_id) \
-        .join(TransactionCourse, and_(TransactionCourse.transaction_id == Transaction.id,
-                                      TransactionCourse.course_id == Course.id)) \
         .outerjoin(UserLikeCourse, and_(UserLikeCourse.course_id == Course.id,
                                         UserLikeCourse.user_id == _id,
                                         UserLikeCourse.deleted_flag.isnot(True))) \
         .filter(UserPurchaseCourse.user_id == _id,
                 UserPurchaseCourse.deleted_flag.isnot(True),
                 Course.deleted_flag.isnot(True))
-      res_query = res_query.order_by(desc(UserPurchaseCourse.time)).paginate(args.page, args.limit)
+      res_query = res_query.order_by(desc(UserPurchaseCourse.created_at)).paginate(args.page, args.limit)
       return res_query
     except Exception as e:
       raise InternalServerError(str(e.__cause__))
@@ -299,15 +268,12 @@ class UserByCourse(object):
         User.email,
         User.date_of_birth,
         User.url_avatar,
-        Transaction.time.label('buyed_at')
-      ).join(Transaction, Transaction.user_id == User.id) \
-        .join(TransactionCourse, TransactionCourse.transaction_id == Transaction.id) \
-        .filter(TransactionCourse.course_id == course_id,
-                Transaction.status == 'success',
-                TransactionCourse.deleted_flag.isnot(True),
-                Transaction.deleted_flag.isnot(True),
+        UserPurchaseCourse.created_at.label('buyed_at')
+      ).join(UserPurchaseCourse, UserPurchaseCourse.user_id==User.id)\
+        .filter(UserPurchaseCourse.course_id == course_id,
+                UserPurchaseCourse.deleted_flag.isnot(True),
                 User.deleted_flag.isnot(True))
-      res_query = res_query.order_by(desc(Transaction.created_at)).paginate(args.page, args.limit)
+      res_query = res_query.order_by(desc(UserPurchaseCourse.created_at)).paginate(args.page, args.limit)
       return res_query
     except Exception as e:
       raise InternalServerError(str(e.__cause__))
@@ -322,15 +288,12 @@ class UserByCourse(object):
         User.email,
         User.date_of_birth,
         User.url_avatar,
-        Transaction.time.label('buyed_at')
-      ).join(Transaction, Transaction.user_id == User.id) \
-        .join(TransactionCourse, TransactionCourse.transaction_id == Transaction.id) \
-        .filter(TransactionCourse.course_id == course_id,
-                Transaction.status == 'success',
-                TransactionCourse.deleted_flag.isnot(True),
-                Transaction.deleted_flag.isnot(True),
+        UserPurchaseCourse.created_at.label('buyed_at')
+      ).join(UserPurchaseCourse, UserPurchaseCourse.user_id==User.id)\
+        .filter(UserPurchaseCourse.course_id == course_id,
+                UserPurchaseCourse.deleted_flag.isnot(True),
                 User.deleted_flag.isnot(True))
-      res_query = res_query.order_by(desc(Transaction.created_at)).all()
+      res_query = res_query.order_by(desc(UserPurchaseCourse.created_at)).all()
       return res_query
     except Exception as e:
       raise InternalServerError(str(e.__cause__))

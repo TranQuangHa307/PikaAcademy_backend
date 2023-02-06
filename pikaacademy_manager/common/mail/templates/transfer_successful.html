@@ -18,18 +18,12 @@
   <thead>
     <tr style="background-color: #0DACEA; color: white; font-weight: bold;">
       <th>Course</th>
-      <th>Price</th>
-      <th>Discount</th>
-      <th>Total</th>
     </tr>
   </thead>
   <tbody>
     {% for item in transaction_courses %}
       <tr>
         <td>{{ item.course_name }}</td>
-        <td style="text-align: right;">{{ "{:,}".format(item.original_price) }}đ</td>
-        <td style="text-align: right;">{{ "{:,}".format(item.discount) }}%</td>
-        <td style="text-align: right;">{{ "{:,}".format(item.original_price - ((item.original_price/100)*item.discount)) }}đ</td>
       </tr>
     {% endfor %}
   </tbody>
@@ -45,12 +39,8 @@
       <td style="text-align: right;">{{ "{:,}".format(transaction.total) }}đ</td>
     </tr>
     <tr>
-      <td style="text-align: right; font-weight: bold;">Discount</td>
-      <td style="text-align: right;">{{ "{:,}".format(transaction.discount) }}đ</td>
-    </tr>
-    <tr>
       <td style="text-align: right; font-weight: bold;">Total Amount</td>
-      <td style="text-align: right;">{{ "{:,}".format(transaction.total - (transaction.total/100)*transaction.discount) }}đ</td>
+      <td style="text-align: right;">{{ "{:,}".format(transaction.total) }}đ</td>
     </tr>
   </tbody>
 </table>

@@ -11,7 +11,7 @@ from .models import Teacher
 class TeacherDAO(object):
 
   @staticmethod
-  def get_by_email(email):
+  def get_by_email_pw(email):
     try:
       res_query = db.session.query(
         Teacher.id,
@@ -61,7 +61,7 @@ class TeacherDAO(object):
       raise InternalServerError(str(e.__cause__))
 
   @staticmethod
-  def get_list(args: Pagination):
+  def get_list(args: Pagination, is_active=False):
     try:
       res_query = db.session.query(
         Teacher.id,
@@ -76,6 +76,8 @@ class TeacherDAO(object):
       ).filter(Teacher.deleted_flag.isnot(True))
       if args.keyword:
         res_query = res_query.filter(Teacher.full_name.ilikes(f'%%'))
+      if is_active:
+        res_query = res_query.filter(Teacher.is_active == is_active)
       res_query = res_query.group_by(Teacher.id) \
         .order_by(desc(Teacher.followed)) \
         .paginate(args.page, args.limit)

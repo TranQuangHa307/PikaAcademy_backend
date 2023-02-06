@@ -38,7 +38,7 @@ class FollowerDAO(object):
   def get_all_follower_by_teacher_id(teacher_id):
     try:
       res_query = db.session.query(
-        User.id,
+        User.id.label('user_id'),
         User.first_name,
         User.last_name,
         User.url_avatar,

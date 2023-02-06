@@ -31,14 +31,14 @@ class ChapterController(AuthenticatedResource):
   @api.doc()
   @api.expect(chapter_model, validate=True)
   @api.response(204, 'Course successfully updated.')
-  @AuthenticatedResource.roles_required([RoleTypeEnum.Admin.value])
+  @AuthenticatedResource.roles_required([RoleTypeEnum.Admin.value, RoleTypeEnum.Teacher.value])
   def put(self, chapter_id):
     ChapterDAO.update(chapter_id, api.payload)
     return None, 204
 
   @api.doc()
   @api.response(204, "Course successfully deleted.")
-  @AuthenticatedResource.roles_required([RoleTypeEnum.Admin.value])
+  @AuthenticatedResource.roles_required([RoleTypeEnum.Admin.value, RoleTypeEnum.Teacher.value])
   def delete(self, chapter_id):
     ChapterDAO.delete(chapter_id)
     return None, 204

@@ -24,7 +24,6 @@ user_like_course_fields = {
 user_purchase_course_fields = {
   "user_id": fields.Integer(required=True),
   "course_id": fields.Integer(required=True),
-  "transaction_id": fields.Integer(required=True),
 }
 
 
@@ -77,18 +76,14 @@ class UserPurchaseCourse(Base):
   id = Column(INTEGER, primary_key=True)
   user_id = Column(ForeignKey('user.id'), nullable=False, index=True)
   course_id = Column(ForeignKey('course.id'), nullable=False, index=True)
-  transaction_id = Column(ForeignKey('transaction.id'), nullable=False, index=True)
-  time = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
   is_rating = Column(BIT(1))
   created_at = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
   updated_at = Column(DateTime, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
   deleted_flag = Column(BIT(1))
 
   course = relationship('Course')
-  # transaction = relationship('Transaction')
   user = relationship('User')
 
   def __init__(self, params):
     self.user_id = params["user_id"]
     self.course_id = params["course_id"]
-    self.transaction_id = params["transaction_id"]

@@ -57,6 +57,25 @@ class CategoryDAO(object):
       raise InternalServerError(str(e.__cause__))
 
   @staticmethod
+  def get_list_by_interests_id(interests_id):
+    try:
+      res_query = db.session.query(
+        Category.id,
+        Category.name,
+        Category.url_image,
+        Category.interests_id,
+        func.count(Course.id).label("course")
+      ).outerjoin(Course, and_(Course.category_id == Category.id,
+                               Course.deleted_flag.isnot(True)))\
+        .filter(Category.interests_id == interests_id,
+               Category.deleted_flag.isnot(True))\
+        .group_by(Category.id)\
+        .order_by(desc(Category.created_at)).all()
+      return res_query
+    except Exception as e:
+      raise InternalServerError(str(e.__cause__))
+
+  @staticmethod
   def add(params):
     try:
       category = Category(params)

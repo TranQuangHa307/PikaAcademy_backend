@@ -4,7 +4,6 @@ from api_public.course_api import api as course_api_public
 from api_public.interests_api import api as interests_api_public
 from api_public.teacher_api import api as teacher_api_public
 from api_public.followed_api import api as followed_api_public
-from cart.controllers import api as cart_api
 from category.controllers import api as category_api
 from chapter.controllers import api as chapter_api
 from course.controllers import api as course_api
@@ -15,9 +14,9 @@ from interests.controllers import api as interests_api
 from rating.controllers import api as rating_api
 from session.controllers import api as session_api
 from teacher.controllers import api as teacher_api
-from transaction.controllers import api as transaction_api
 from user.controllers import api as user_api
-
+from comment.controllers import api as comment_api
+from notification.controllers import api as notification_api
 from .common import api as common_api
 
 authorizations = {
@@ -48,8 +47,6 @@ api.add_namespace(chapter_api)
 api.add_namespace(session_api)
 api.add_namespace(teacher_api)
 api.add_namespace(user_api)
-api.add_namespace(cart_api)
-api.add_namespace(transaction_api)
 api.add_namespace(rating_api)
 api.add_namespace(followed_api)
 api.add_namespace(teacher_api_public)
@@ -57,3 +54,5 @@ api.add_namespace(course_api_public)
 api.add_namespace(interests_api_public)
 api.add_namespace(category_api_public)
 api.add_namespace(followed_api_public)
+api.add_namespace(comment_api)
+api.add_namespace(notification_api)

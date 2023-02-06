@@ -1,4 +1,4 @@
-Flask==1.1.0
+Flask==1.1.4
 flask-restplus==0.13.0
 Flask-Cors==3.0.10
 Werkzeug==0.16.1
@@ -22,3 +22,6 @@ paypalrestsdk==1.13.1
 sendgrid==6.8.3
 beautifulsoup4==4.9.3
 google-api-python-client
+jinja2<3.1.0
+markupsafe==2.0.1
+

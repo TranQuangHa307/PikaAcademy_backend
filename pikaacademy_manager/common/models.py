@@ -24,7 +24,6 @@ class Pagination:
       interests,
       categories,
       levels,
-      prices,
       type,
       status
   ):
@@ -36,7 +35,6 @@ class Pagination:
     self.interests = interests
     self.categories = categories
     self.levels = levels
-    self.prices = prices
     self.type = type
     self.status = status
 
@@ -50,7 +48,6 @@ class Pagination:
     interests = args.interests if 'interests' in args and args.interests else []
     categories = args.categories if 'categories' in args and args.categories else []
     levels = args.levels if 'levels' in args and args.levels else []
-    prices = args.prices if 'prices' in args and args.prices else []
     type = args.type if 'type' in args and args.type else ""
     status = args.status if 'status' in args and args.status else ""
-    return cls(page, limit, user_id, teacher_id, keyword, interests, categories, levels, prices, type, status)
+    return cls(page, limit, user_id, teacher_id, keyword, interests, categories, levels, type, status)

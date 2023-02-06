@@ -7,7 +7,6 @@ pagination_parameter_course_list.add_argument("keyword", type=str, location="arg
 pagination_parameter_course_list.add_argument("user_id", type=int, location="args")
 pagination_parameter_course_list.add_argument("interests", action='split', location="args")
 pagination_parameter_course_list.add_argument("categories", action='split', location="args")
-pagination_parameter_course_list.add_argument("prices", action='split', location="args")
 pagination_parameter_course_list.add_argument("levels", action='split', location="args")
 
 pagination_parameter_course_by_type = reqparse.RequestParser()

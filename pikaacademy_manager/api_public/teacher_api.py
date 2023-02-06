@@ -21,7 +21,7 @@ class TeacherListController(Resource):
   def get(self):
     args = pagination_parameter.parse_args(request)
     paging = Pagination.from_arguments(args)
-    return paginate_result(TeacherDAO.get_list(paging))
+    return paginate_result(TeacherDAO.get_list(paging, True))
 
 
 @api.route('/<teacher_id>')
