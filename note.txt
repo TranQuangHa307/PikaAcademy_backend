@@ -1,0 +1,18 @@
+
+C:\Users\admin\AppData\Local\Programs\Python\Python39\python.exe -m flask run
+
+python 39
+node: 16.19.0
+
+docker-compose -f docker-compose-local.yml up --build
+docker-compose -f docker-compose-local.yml up --build
+
+http://localhost:8080/teachermanager
+    + lonhpham2k3@gmail.com/emcuatoi123
+http://localhost:8080/admin/login
+    + abc/emcuatoi123
+
+
+pokemon2050theki@gmail.com/emcuatoi123
+humgk6299@gmail.com/emcuatoi123
+lonhpham2k3@gmail.com/emcuatoi123

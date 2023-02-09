@@ -1,3 +1,4 @@
+from builtins import print
 from logging import getLogger
 
 from common.constants import RoleTypeEnum
@@ -17,6 +18,7 @@ from flask_jwt_extended import get_jwt_identity, get_jwt_claims
 from flask_jwt_extended import create_access_token
 from .service import (change_password, sign_up, active_teacher)
 from course.dao import CourseDAO
+from sqlalchemy import or_
 
 logger = getLogger(__name__)
 api = Namespace("teacher", description='Teachers related operations')
@@ -32,10 +34,9 @@ class Login(Resource):
   @api.expect(login_parameters, validate=True)
   def post(self):
     args = login_parameters.parse_args(request)
+    print(1111,args);
     teacher_info = (
-      db.session.query(Teacher).filter(Teacher.email == args.email,
-                                       Teacher.is_active,
-                                       Teacher.deleted_flag.isnot(True)).first()
+      db.session.query(Teacher).filter((Teacher.email == args.email), Teacher.deleted_flag.isnot(True)).first()
     )
     if teacher_info is None or (
         teacher_info and not check_password_hash(teacher_info.hash_pwd, args.password)
